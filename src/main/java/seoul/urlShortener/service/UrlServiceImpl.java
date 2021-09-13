@@ -6,8 +6,6 @@ import seoul.urlShortener.domain.Url;
 import seoul.urlShortener.repository.UrlRepository;
 import seoul.urlShortener.utils.Base62Util;
 import seoul.urlShortener.utils.UrlTypeValidation;
-
-import javax.transaction.Transactional;
 import java.util.Optional;
 
 @Service
@@ -29,31 +27,37 @@ public class UrlServiceImpl implements UrlService{
     }
 
     @Override
-    public String generateShortUrl(String longurl){
+    public String generateShortUrl(String longurl) throws Exception {
 
         if(!urlTypeValidation.valid(longurl)){
             throw new IllegalArgumentException("잘못된 URL 타입입니다.");
         }
-        Url url = new Url();
+        Url url;
         longurl = longurl.replace("https://","").replace("http://","");
-        url.setLongurl(longurl);
-        Url newUrl = urlRepository.saveAndFlush(url);
-        Long id = newUrl.getId() + 20000l;
         String shorturl;
-        if(id == null) {
-            urlRepository.save(updateLongUrl(longurl));
-            id = urlRepository.findIdByLongurl(longurl);
+        if (urlRepository.findByLongurl(longurl).isPresent()) {
+            url = urlRepository.findByLongurl(longurl).get();
+            shorturl = base62Util.encoding(url.getId().intValue());
+            return "http://localhost:8080/"+ shorturl;
         }
+        url = new Url();
+        url.setLongurl(longurl);
+        System.out.println("longurl = " + longurl);
+        Url newUrl = urlRepository.save(url);
+        Long id = newUrl.getId();
         shorturl = base62Util.encoding(id.intValue());
         return "http://localhost:8080/"+shorturl;
     }
 
     @Override
-    @Transactional
     public String getLongUrlByShortUrl(String shorturl) {
-        Integer id = base62Util.decoding(shorturl) - 20000;
+        Integer id = base62Util.decoding(shorturl);
         Long longId = Long.valueOf(id);
-        Optional<Url> url = urlRepository.findById(longId);
+        Optional<Url> url;
+        if (urlRepository.findById(longId).isPresent())
+            url = urlRepository.findById(longId);
+        else
+            url = Optional.of(new Url());
         String longurl = url.get().getLongurl();
         return longurl;
     }

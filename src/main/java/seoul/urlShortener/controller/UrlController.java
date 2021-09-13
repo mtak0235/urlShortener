@@ -1,7 +1,6 @@
 package seoul.urlShortener.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,7 +22,7 @@ public class UrlController {
     }
 
     @PostMapping("/")
-    public String Shortening(@RequestParam String longurl, Model model){
+    public String Shortening(@RequestParam String longurl, Model model) throws Exception {
         model.addAttribute("longurl",longurl);
         model.addAttribute("shorturl",urlService.generateShortUrl(longurl));
         return "index";

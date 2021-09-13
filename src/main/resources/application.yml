@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:h2:tcp://localhost/~/Desktop/study/urlShortener
+    url: jdbc:h2:tcp://localhost/~/Desktop/url
     username: sa
     password:
     driver-class-name: org.h2.Driver
